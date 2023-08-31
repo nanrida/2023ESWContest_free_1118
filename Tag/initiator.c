@@ -34,8 +34,8 @@
 #include "bsp.h"
 #include "app_error.h"
 
-#define width 4
-#define height 2
+#define width 10*0.45
+#define height 12*0.45
 
 #if defined(TEST_SS_TWR_INITIATOR)
 
@@ -84,7 +84,7 @@ static uint8_t frame_seq_nb = 0;
 #define RX_BUF_LEN 20
 static uint8_t rx_buffer[RX_BUF_LEN];
 
-/* Hold copy of status register state here for reference so that it can be examined at a debug breakpoint. */
+/* Hold copy of status regis0ter state here for reference so that it can be examined at a debug breakpoint. */
 static uint32_t status_reg = 0;
 
 /* Delay between frames, in UWB microseconds. See NOTE 1 below. */
@@ -112,10 +112,10 @@ double vehicle_width = 0.1;
 double wheel_radius = 0.05;
 int timeMs=0;
 int newTm=0;
-int cnt=0;                  // Communication count
+int how=0;                  // Communication count
 
 /* set goal position. first destination: (1.06m,1.65m), second destination: (2.5m,0.83m)*/
-double goal_list[2][2] = {{1.06,1.65},{2.5,0.83}};
+double goal_list[2][2] = {{2,8},{2,4}};
 
 /*! ------------------------------------------------------------------------------------------------------------------
  * @fn main()
@@ -344,9 +344,9 @@ int ss_twr_initiator(void)
 
     for(int i = 0;i<size;i++)
     {
-      g_x = goal_list[i][0];
-      g_y = goal_list[i][1];
-
+      g_x = goal_list[i][0]*0.45;
+      g_y = goal_list[i][1]*0.45;
+      
       while(1)
       {
           newTm = getTickCount();
@@ -442,11 +442,11 @@ int ss_twr_initiator(void)
               }
 
               /*If no previous coordinate,so get new coordinate*/
-              if(cnt == 0)
+              if(how == 0)
               {
                 prev_x=pos_x;
                 prev_y=pos_y;
-                cnt=1;
+                how=1;
                 go(20,20);
                 timeMs = 0;
                 continue;
@@ -464,7 +464,8 @@ int ss_twr_initiator(void)
                 
                 /*PWM control*/
                 double rad = degree_to_rad(angle);
-                double dif = ang_velocity(rad)/0.08; //  pwm 1% = 0.08 rad/sec
+                int dif = ang_velocity(rad)/0.08; //  pwm 1% = 0.08 rad/sec
+                printf("%d\n",dif);
                 
                 if(angle_1 >180)
                   go_left(dif);
@@ -477,7 +478,11 @@ int ss_twr_initiator(void)
                 
                 else if(angle_1<-180)
                   go_right(dif);
+                printf("%g, %g\n",prev_x,prev_y);
                 
+                printf("%g, %g\n",pos_x,pos_y);
+              nrf_delay_ms(1000);
+        
                 prev_x = pos_x;
                 prev_y = pos_y;
 
